@@ -1,0 +1,2501 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mfumo wa Dawa - Hospitali</title>
+<style>
+  :root{
+    --bg: #0A1830;
+    --bg-alt: #0D2044;
+    --surface: #112a56;
+    --surface-2: #16336a;
+    --border: #234a86;
+    --text: #E9EFFB;
+    --text-muted: #8FA5CC;
+    --accent: #37D6C4;
+    --accent-dim: #1F7A6F;
+    --amber: #F2B84B;
+    --red: #F0645A;
+    --green: #4ADE9A;
+    --radius: 10px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background: linear-gradient(180deg, var(--bg) 0%, #081226 100%);
+    color: var(--text);
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    min-height:100vh;
+    padding-bottom: 40px;
+  }
+  header{
+    padding: 22px 18px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-alt);
+  }
+  header h1{
+    margin:0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+  }
+  header p{
+    margin: 4px 0 0;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+  .summary{
+    display:grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 16px;
+  }
+  .card{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+  }
+  .card .num{
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  .card .label{
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    margin-top: 2px;
+  }
+  .card.warn .num{ color: var(--amber); }
+  .card.good .num{ color: var(--accent); }
+  .card.danger .num{ color: var(--red); }
+
+  nav.tabs{
+    display:flex;
+    overflow-x:auto;
+    gap: 6px;
+    padding: 0 16px 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+  nav.tabs::-webkit-scrollbar{ display:none; }
+  .tab-btn{
+    flex: 0 0 auto;
+    background: var(--surface);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 0.82rem;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .tab-btn.active{
+    background: var(--accent);
+    color: #06231F;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  main{ padding: 4px 16px 20px; }
+  section.panel{ display:none; }
+  section.panel.active{ display:block; }
+
+  h2.section-title{
+    font-size: 1rem;
+    margin: 14px 0 10px;
+    color: var(--text);
+  }
+
+  form.add-form{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    display:grid;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  form.add-form .row{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  label{
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    display:block;
+    margin-bottom: 4px;
+  }
+  input, select{
+    width:100%;
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 0.88rem;
+  }
+  input:focus, select:focus{
+    outline: none;
+    border-color: var(--accent);
+  }
+  button.primary{
+    background: var(--accent);
+    color: #06231F;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor:pointer;
+  }
+  button.primary:active{ opacity: 0.85; }
+
+  .med-card{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .med-card .top-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap: 8px;
+  }
+  .med-card .name{
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  .med-card .cat{
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    margin-top: 2px;
+  }
+  .badge{
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 999px;
+    white-space:nowrap;
+  }
+  .badge.ok{ background: rgba(74,222,154,0.15); color: var(--green); }
+  .badge.low{ background: rgba(242,184,75,0.15); color: var(--amber); }
+  .badge.out{ background: rgba(240,100,90,0.15); color: var(--red); }
+
+  .stat-row{
+    display:flex;
+    gap: 14px;
+    margin-top: 10px;
+    flex-wrap:wrap;
+  }
+  .stat{
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+  .stat b{
+    color: var(--text);
+    display:block;
+    font-size: 0.95rem;
+  }
+  .actions{
+    display:flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .actions button{
+    flex:1;
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 7px;
+    font-size: 0.78rem;
+    cursor:pointer;
+  }
+  .actions button.plus{ color: var(--green); border-color: rgba(74,222,154,0.4); }
+  .actions button.minus{ color: var(--red); border-color: rgba(240,100,90,0.4); }
+
+  .bar-item{
+    margin-bottom: 12px;
+  }
+  .bar-item .bar-label{
+    display:flex;
+    justify-content:space-between;
+    font-size: 0.82rem;
+    margin-bottom: 5px;
+  }
+  .bar-track{
+    background: var(--bg-alt);
+    border-radius: 6px;
+    height: 12px;
+    overflow:hidden;
+    border: 1px solid var(--border);
+  }
+  .bar-fill{
+    height:100%;
+    background: linear-gradient(90deg, var(--accent-dim), var(--accent));
+    border-radius: 6px 0 0 6px;
+  }
+
+  .empty{
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-align:center;
+    padding: 30px 10px;
+  }
+
+  .log-entry{
+    display:flex;
+    justify-content:space-between;
+    font-size: 0.82rem;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .log-entry .l-name{ font-weight:600; }
+  .log-entry .l-meta{ color: var(--text-muted); font-size:0.72rem; }
+  .log-entry .l-qty{ color: var(--accent); font-weight:700; }
+
+  .day-group{
+    margin-bottom: 16px;
+  }
+  .day-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding: 8px 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px 8px 0 0;
+  }
+  .day-head .day-date{ font-weight:700; font-size:0.85rem; }
+  .day-head .day-total{ color: var(--accent); font-weight:700; font-size:0.85rem; }
+  .day-body{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    padding: 4px 12px;
+  }
+  .sale-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.82rem;
+  }
+  .sale-row:last-child{ border-bottom:none; }
+  .sale-row .sr-name{ font-weight:600; }
+  .sale-row .sr-meta{ color: var(--text-muted); font-size:0.72rem; }
+  .sale-row .sr-cost{ color: var(--accent); font-weight:700; text-align:right; }
+  .sale-row .sr-cost small{ display:block; color: var(--text-muted); font-weight:400; font-size:0.68rem; }
+
+  .grand-total{
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 14px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom: 16px;
+  }
+  .grand-total .gt-label{ color: var(--text-muted); font-size:0.82rem; }
+  .grand-total .gt-num{ color: var(--accent); font-size:1.3rem; font-weight:700; }
+
+  #toast{
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--surface-2);
+    border: 1px solid var(--accent);
+    color: var(--text);
+    padding: 10px 18px;
+    border-radius: 16px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    z-index: 999;
+    max-width: calc(100vw - 32px);
+    width: max-content;
+    text-align: center;
+    white-space: normal;
+    line-height: 1.35;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  }
+  #toast.show{
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  #toast.error{
+    background: rgba(240,100,90,0.18);
+    border-color: var(--red);
+    color: #FFE1DE;
+  }
+
+  .req::after{
+    content: " *";
+    color: var(--red);
+  }
+
+  .stock-filter{
+    display:flex;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .filter-btn{
+    flex: 1;
+    background: var(--surface);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 6px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .filter-btn.active{
+    background: var(--accent);
+    color: #06231F;
+    border-color: var(--accent);
+  }
+
+  .type-tag{
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .type-tag.dawa{ background: rgba(55,214,196,0.15); color: var(--accent); }
+  .type-tag.kifaa{ background: rgba(242,184,75,0.15); color: var(--amber); }
+
+  button.secondary-btn{
+    background: var(--surface-2);
+    color: var(--text);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 9px 14px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .rx-item{
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+  }
+  .rx-item + .rx-item{ margin-top: 8px; }
+  .rx-item-remove{
+    margin-top: 8px;
+    width: 100%;
+    background: transparent;
+    border: 1px solid rgba(240,100,90,0.4);
+    color: var(--red);
+    border-radius: 6px;
+    padding: 6px;
+    font-size: 0.75rem;
+    cursor: pointer;
+  }
+
+  .rx-card{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .rx-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap: 8px;
+  }
+  .rx-patient{ font-weight:700; font-size:0.95rem; }
+  .rx-meta{ color: var(--text-muted); font-size:0.75rem; margin-top:2px; }
+  .rx-total{ color: var(--accent); font-weight:700; font-size:0.9rem; white-space:nowrap; }
+  .rx-drugs{ margin-top: 10px; border-top: 1px solid var(--border); padding-top: 8px; }
+  .rx-drug-row{
+    display:flex;
+    justify-content:space-between;
+    font-size: 0.78rem;
+    padding: 4px 0;
+    color: var(--text-muted);
+  }
+  .rx-drug-row span.d-name{ color: var(--text); }
+
+  .rx-queue-card{
+    background: var(--surface);
+    border: 1px solid var(--amber);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .rx-queue-card .rx-approve-actions{
+    display:flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .rx-queue-card .rx-approve-actions button{
+    flex:1;
+    border-radius: 8px;
+    padding: 9px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .rx-queue-card .btn-approve{
+    background: var(--accent);
+    color: #06231F;
+    border: none;
+  }
+  .rx-queue-card .btn-postpone{
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+  .rx-queue-card .btn-reject{
+    background: transparent;
+    color: var(--red);
+    border: 1px solid rgba(240,100,90,0.4);
+  }
+  .rx-queue-card .btn-edit{
+    background: transparent;
+    color: var(--amber);
+    border: 1px solid rgba(242,184,75,0.4);
+  }
+  .rx-queue-card .btn-cancel-edit{
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+  .rx-edit-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .rx-edit-row:last-child{ border-bottom:none; }
+  .rx-edit-row .re-name{ font-size:0.82rem; flex:1; }
+  .rx-edit-row input{ width: 80px; text-align:center; }
+
+  .lab-results-box{
+    width: 100%;
+    min-height: 80px;
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px;
+    color: var(--text);
+    font-size: 0.85rem;
+    resize: vertical;
+    margin-top: 8px;
+  }
+  .lab-results-text{
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    font-size: 0.82rem;
+    color: var(--text);
+    white-space: pre-wrap;
+  }
+  .lab-results-text .lr-label{ color: var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.3px; display:block; margin-bottom:3px; }
+  .lab-used-badge{ color: var(--accent); font-size:0.72rem; font-weight:700; margin-top:8px; display:inline-block; }
+
+  .hesabu-table-scroll{
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+  }
+  table.hesabu-table{
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+    min-width: 560px;
+  }
+  table.hesabu-table thead th{
+    background: var(--surface-2);
+    color: var(--text-muted);
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+  }
+  table.hesabu-table tbody td{
+    background: var(--surface);
+    padding: 9px 12px;
+    border-top: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  table.hesabu-table tbody tr:hover td{ background: var(--surface-2); }
+  .hesabu-mhusika{
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .hesabu-mhusika.nje{ background: rgba(55,214,196,0.15); color: var(--accent); }
+  .hesabu-mhusika.dr{ background: rgba(242,184,75,0.15); color: var(--amber); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Mfumo wa Dawa</h1>
+  <p>Idara ya Famasi — Ufuatiliaji wa dawa hospitalini</p>
+</header>
+
+<div class="summary" id="summaryCards"></div>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="stock">Stock</button>
+  <button class="tab-btn" data-tab="ingizo">Zilizoingizwa</button>
+  <button class="tab-btn" data-tab="manunuzi">Manunuzi</button>
+  <button class="tab-btn" data-tab="mauzo">Mauzo kwa Siku</button>
+  <button class="tab-btn" data-tab="reception">Reception</button>
+  <button class="tab-btn" data-tab="maagizo">Maagizo ya Daktari</button>
+  <button class="tab-btn" data-tab="maabara">Vipimo vya Maabara</button>
+  <button class="tab-btn" data-tab="mahitaji">Zinazohitajika</button>
+  <button class="tab-btn" data-tab="matumizi">Matumizi %</button>
+  <button class="tab-btn" data-tab="hesabu">Hesabu za Jumla</button>
+</nav>
+
+<main>
+
+  <!-- STOCK -->
+  <section class="panel active" id="panel-stock">
+    <h2 class="section-title">Bidhaa Mpya / Sasisha Stock</h2>
+    <form class="add-form" id="formStock">
+      <div>
+        <label>Jina la Bidhaa</label>
+        <input type="text" id="s_name" placeholder="mfano: Paracetamol 500mg au Sindano 5ml">
+      </div>
+      <div class="row">
+        <div>
+          <label>Aina ya Bidhaa</label>
+          <select id="s_type">
+            <option value="dawa">Dawa</option>
+            <option value="kifaa">Kifaa cha Tiba</option>
+          </select>
+        </div>
+        <div>
+          <label>Kundi</label>
+          <select id="s_cat"></select>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Kiwango cha chini kinachotakiwa</label>
+          <input type="number" id="s_min" placeholder="mfano: 50" min="0">
+        </div>
+        <div>
+          <label>Stock ya sasa (jumla ya kipimo kimoja)</label>
+          <input type="number" id="s_qty" placeholder="mfano: 200" min="0">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Tarehe ya Utengenezaji (hiari)</label>
+          <input type="date" id="s_mfg_date">
+        </div>
+        <div>
+          <label>Tarehe ya Mwisho wa Matumizi (hiari)</label>
+          <input type="date" id="s_exp_date">
+        </div>
+      </div>
+
+      <div>
+        <label>Jina la Kipimo Kimoja</label>
+        <input type="text" id="s_unit_label" placeholder="mfano: Kidonge, ML, Kipande" value="Kidonge">
+      </div>
+      <div>
+        <label>Bei ya Kipimo Kimoja (TZS)</label>
+        <input type="number" id="s_price_unit" placeholder="mfano: 150" min="0">
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Idadi kwa Pakiti (hiari)</label>
+          <input type="number" id="s_pack_size" placeholder="mfano: 100" min="0">
+        </div>
+        <div>
+          <label>Bei ya Pakiti (TZS)</label>
+          <input type="number" id="s_price_pack" placeholder="Itakadiriwa kiotomatiki" min="0">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Idadi kwa Chupa (hiari)</label>
+          <input type="number" id="s_bottle_size" placeholder="mfano: 30" min="0">
+        </div>
+        <div>
+          <label>Bei ya Chupa (TZS)</label>
+          <input type="number" id="s_price_bottle" placeholder="Itakadiriwa kiotomatiki" min="0">
+        </div>
+      </div>
+
+      <button type="submit" class="primary">Ongeza Bidhaa</button>
+    </form>
+
+    <h2 class="section-title">Orodha ya Stock</h2>
+    <div class="stock-filter">
+      <button type="button" class="filter-btn active" data-filter="zote">Zote</button>
+      <button type="button" class="filter-btn" data-filter="dawa">Dawa</button>
+      <button type="button" class="filter-btn" data-filter="kifaa">Vifaa vya Tiba</button>
+    </div>
+    <div id="stockList"></div>
+  </section>
+
+  <!-- ZILIZOINGIZWA -->
+  <section class="panel" id="panel-ingizo">
+    <h2 class="section-title">Sajili Dawa Zilizoingizwa</h2>
+    <form class="add-form" id="formIngizo">
+      <div>
+        <label>Chagua dawa</label>
+        <select id="i_med"></select>
+      </div>
+      <div class="row">
+        <div>
+          <label>Kiasi kilichoingizwa</label>
+          <input type="number" id="i_qty" min="1">
+        </div>
+        <div>
+          <label>Chanzo</label>
+          <input type="text" id="i_source" placeholder="mfano: MSD, Wafadhili">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Tarehe ya Utengenezaji (hiari)</label>
+          <input type="date" id="i_mfg_date">
+        </div>
+        <div>
+          <label>Tarehe ya Mwisho wa Matumizi (hiari)</label>
+          <input type="date" id="i_exp_date">
+        </div>
+      </div>
+      <button type="submit" class="primary">Sajili Uingizaji</button>
+    </form>
+    <h2 class="section-title">Historia ya Uingizaji</h2>
+    <div id="ingizoList"><p class="empty">Hakuna rekodi bado.</p></div>
+  </section>
+
+  <!-- MANUNUZI -->
+  <section class="panel" id="panel-manunuzi">
+    <h2 class="section-title">Sajili Manunuzi</h2>
+    <form class="add-form" id="formManunuzi">
+      <div>
+        <label>Chagua dawa</label>
+        <select id="m_med"></select>
+      </div>
+      <div class="row">
+        <div>
+          <label>Kiasi kilichonunuliwa</label>
+          <input type="number" id="m_qty" min="1">
+        </div>
+        <div>
+          <label>Gharama jumla (TZS)</label>
+          <input type="number" id="m_cost" min="0">
+        </div>
+      </div>
+      <div>
+        <label>Muuzaji</label>
+        <input type="text" id="m_supplier" placeholder="mfano: Kampuni ya Dawa X">
+      </div>
+      <button type="submit" class="primary">Sajili Ununuzi</button>
+    </form>
+    <h2 class="section-title">Historia ya Manunuzi</h2>
+    <div id="manunuziList"><p class="empty">Hakuna rekodi bado.</p></div>
+  </section>
+
+  <!-- MAUZO -->
+  <section class="panel" id="panel-mauzo">
+    <h2 class="section-title">Maagizo ya Daktari Yanayosubiri Idhini</h2>
+    <p style="color:var(--text-muted); font-size:0.83rem; margin-top:-4px;">
+      Dawa alizoandikiwa mgonjwa na daktari. Bonyeza "Idhinisha Mauzo" ukishamuuzia mgonjwa — stock itapungua wakati huo. Akiahirisha, acha tu — taarifa haitabadilika.
+    </p>
+    <div id="rxQueueList"></div>
+
+    <h2 class="section-title">Sajili Mauzo ya Leo</h2>
+    <form class="add-form" id="formMauzo">
+      <div>
+        <label>Chagua dawa</label>
+        <select id="sale_med"></select>
+      </div>
+      <div>
+        <label>Kipimo cha Kuuzia</label>
+        <select id="sale_unit"></select>
+      </div>
+      <div class="row">
+        <div>
+          <label>Kiasi kilichouzwa</label>
+          <input type="number" id="sale_qty" min="1">
+        </div>
+        <div>
+          <label>Bei kwa kipimo (TZS)</label>
+          <input type="number" id="sale_price" min="0">
+        </div>
+      </div>
+      <button type="submit" class="primary">Sajili Mauzo</button>
+    </form>
+
+    <h2 class="section-title">Mauzo Kikamilifu (Kwa Siku)</h2>
+    <div id="mauzoTotal"></div>
+    <div id="mauzoList"></div>
+  </section>
+
+  <!-- RECEPTION -->
+  <section class="panel" id="panel-reception">
+    <h2 class="section-title">Sajili Mgonjwa (Reception)</h2>
+    <p style="color:var(--text-muted); font-size:0.83rem; margin-top:-4px;">
+      Mgonjwa analipia ada ya kumuona daktari hapa. Taarifa zake zitatumika moja kwa moja kwa daktari na maabara popote atakapopelekwa.
+    </p>
+    <form class="add-form" id="formReception">
+      <div>
+        <label>Jina la Mgonjwa</label>
+        <input type="text" id="rec_name" placeholder="mfano: Fatuma Juma">
+      </div>
+      <div class="row">
+        <div>
+          <label>Namba ya Simu (hiari)</label>
+          <input type="text" id="rec_phone" placeholder="mfano: 07XX XXX XXX">
+        </div>
+        <div>
+          <label>Umri (hiari)</label>
+          <input type="number" id="rec_age" min="0" placeholder="mfano: 34">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Jinsia</label>
+          <select id="rec_gender">
+            <option value="">-- Chagua --</option>
+            <option value="Mwanaume">Mwanaume</option>
+            <option value="Mwanamke">Mwanamke</option>
+          </select>
+        </div>
+        <div>
+          <label>Uraia</label>
+          <input type="text" id="rec_citizenship" value="Mtanzania" placeholder="mfano: Mtanzania">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Mkoa</label>
+          <select id="rec_region">
+            <option value="">-- Chagua Mkoa --</option>
+            <option>Arusha</option><option>Dar es Salaam</option><option>Dodoma</option>
+            <option>Geita</option><option>Iringa</option><option>Kagera</option>
+            <option>Katavi</option><option>Kigoma</option><option>Kilimanjaro</option>
+            <option>Lindi</option><option>Manyara</option><option>Mara</option>
+            <option>Mbeya</option><option>Morogoro</option><option>Mtwara</option>
+            <option>Mwanza</option><option>Njombe</option><option>Pemba Kaskazini</option>
+            <option>Pemba Kusini</option><option>Pwani</option><option>Rukwa</option>
+            <option>Ruvuma</option><option>Shinyanga</option><option>Simiyu</option>
+            <option>Singida</option><option>Songwe</option><option>Tabora</option>
+            <option>Tanga</option><option>Unguja Kaskazini</option><option>Unguja Kusini</option>
+            <option>Unguja Mjini Magharibi</option>
+          </select>
+        </div>
+        <div>
+          <label>Wilaya</label>
+          <input type="text" id="rec_district" placeholder="mfano: Ilala">
+        </div>
+      </div>
+      <div>
+        <label>Kabila (hiari)</label>
+        <input type="text" id="rec_tribe" list="tribeList" placeholder="mfano: Sukuma">
+        <datalist id="tribeList">
+          <option value="Sukuma"><option value="Nyamwezi"><option value="Chaga">
+          <option value="Haya"><option value="Hehe"><option value="Nyakyusa">
+          <option value="Makonde"><option value="Yao"><option value="Gogo">
+          <option value="Ha"><option value="Zaramo"><option value="Maasai">
+          <option value="Iraqw"><option value="Nyaturu"><option value="Pare">
+        </datalist>
+      </div>
+      <div class="row">
+        <div>
+          <label>Ana Bima ya NHIF?</label>
+          <select id="rec_nhif">
+            <option value="hapana">Hapana</option>
+            <option value="ndiyo">Ndiyo</option>
+          </select>
+        </div>
+        <div id="rec_nhif_number_wrap" style="display:none;">
+          <label>Namba ya Kadi ya NHIF</label>
+          <input type="text" id="rec_nhif_number" placeholder="mfano: NHIF-0012345">
+        </div>
+      </div>
+      <div>
+        <label>Ada ya Kumuona Daktari (TZS)</label>
+        <input type="number" id="rec_fee" min="0" value="5000">
+      </div>
+      <button type="submit" class="primary">Sajili na Lipia</button>
+    </form>
+
+    <h2 class="section-title">Wagonjwa Wanaosubiri Daktari</h2>
+    <div id="receptionQueueList"></div>
+
+    <h2 class="section-title">Historia ya Wagonjwa (Kwa Siku)</h2>
+    <div id="receptionHistoryList"></div>
+  </section>
+
+  <!-- MAAGIZO YA DAKTARI -->
+  <section class="panel" id="panel-maagizo">
+    <h2 class="section-title">Maagizo ya Daktari</h2>
+    <p style="color:var(--text-muted); font-size:0.83rem; margin-top:-4px;">
+      Unganisha dawa alizoandikiwa mgonjwa na vipimo/utambuzi wake — stock inapungua kiotomatiki.
+    </p>
+
+    <h2 class="section-title" style="font-size:0.95rem;">Wagonjwa Wapya Kutoka Reception</h2>
+    <div id="doctorPatientQueueList"></div>
+
+    <h2 class="section-title" style="font-size:0.95rem;">Majibu ya Vipimo Yaliyopokelewa (kwa ajili ya kuandikia dawa)</h2>
+    <div id="labResultsForDoctor"></div>
+
+    <h2 class="section-title">Sajili Maagizo ya Daktari</h2>
+    <form class="add-form" id="formMaagizo">
+      <div>
+        <label>Jina la Mgonjwa</label>
+        <input type="text" id="rx_patient" placeholder="mfano: Fatuma Juma">
+      </div>
+      <div class="row">
+        <div>
+          <label>Namba ya Faili (OPD/BHT)</label>
+          <input type="text" id="rx_file" placeholder="mfano: OPD-2201">
+        </div>
+        <div>
+          <label>Daktari</label>
+          <input type="text" id="rx_doctor" placeholder="mfano: Dkt. Mwakalinga">
+        </div>
+      </div>
+      <div>
+        <label>Vipimo / Utambuzi</label>
+        <input type="text" id="rx_diagnosis" placeholder="mfano: Malaria - RDT chanya">
+      </div>
+
+      <div id="rxItems"></div>
+      <button type="button" class="secondary-btn" id="rxAddItem">+ Ongeza Dawa Nyingine</button>
+
+      <button type="submit" class="primary">Sajili Maagizo</button>
+    </form>
+
+    <h2 class="section-title">Historia ya Maagizo (Kwa Siku)</h2>
+    <div id="maagizoTotal"></div>
+    <div id="maagizoList"></div>
+  </section>
+
+  <!-- VIPIMO VYA MAABARA -->
+  <section class="panel" id="panel-maabara">
+    <h2 class="section-title">Sajili Kipimo cha Mgonjwa</h2>
+    <p style="color:var(--text-muted); font-size:0.83rem; margin-top:-4px;">
+      Andika vipimo alivyofanyiwa mgonjwa na gharama yake. Gharama hii inaenda moja kwa moja kwenye Hesabu za Jumla. Majibu yataongezwa baadaye na kutumwa kwa daktari.
+    </p>
+    <form class="add-form" id="formMaabara">
+      <div>
+        <label>Jina la Mgonjwa</label>
+        <input type="text" id="lab_patient" placeholder="mfano: Fatuma Juma">
+      </div>
+      <div class="row">
+        <div>
+          <label>Namba ya Faili (OPD/BHT)</label>
+          <input type="text" id="lab_file" placeholder="mfano: OPD-2201">
+        </div>
+        <div>
+          <label>Daktari Aliyeagiza</label>
+          <input type="text" id="lab_doctor" placeholder="mfano: Dkt. Mwakalinga">
+        </div>
+      </div>
+
+      <div id="labItems"></div>
+      <button type="button" class="secondary-btn" id="labAddItem">+ Ongeza Kipimo Kingine</button>
+
+      <button type="submit" class="primary">Sajili Kipimo (Malipo Yamepokelewa)</button>
+    </form>
+
+    <h2 class="section-title">Vipimo Vinavyosubiri Majibu</h2>
+    <div id="labPendingList"></div>
+
+    <h2 class="section-title">Majibu Yaliyotumwa kwa Daktari</h2>
+    <div id="labReadyList"></div>
+  </section>
+
+  <!-- MAHITAJI -->
+  <section class="panel" id="panel-mahitaji">
+    <h2 class="section-title">Dawa Zinazohitajika Sasa</h2>
+    <p style="color:var(--text-muted); font-size:0.83rem; margin-top:-4px;">
+      Dawa ambazo stock yake iko chini ya kiwango kinachotakiwa.
+    </p>
+    <div id="mahitajiList"></div>
+  </section>
+
+  <!-- MATUMIZI -->
+  <section class="panel" id="panel-matumizi">
+    <h2 class="section-title">Dawa Zinazotumika Sana (kwa Asilimia)</h2>
+    <p style="color:var(--text-muted); font-size:0.83rem; margin-top:-4px;">
+      Asilimia inatokana na mauzo yaliyosajiliwa kwenye kichupo cha "Mauzo kwa Siku".
+    </p>
+    <div id="matumiziChart"></div>
+  </section>
+
+  <!-- HESABU ZA JUMLA (Idhini ya Password) -->
+  <section class="panel" id="panel-hesabu">
+    <div id="hesabuLocked">
+      <h2 class="section-title">Hesabu za Jumla — Eneo Maalum</h2>
+      <p style="color:var(--text-muted); font-size:0.83rem; margin-top:-4px;">
+        Ukurasa huu ni kwa ajili ya mhusika anayekagua mauzo yote. Weka password ili uendelee.
+      </p>
+      <form class="add-form" id="formHesabuLogin">
+        <div>
+          <label>Password</label>
+          <input type="password" id="hesabu_password" placeholder="Weka password">
+        </div>
+        <button type="submit" class="primary">Ingia</button>
+      </form>
+    </div>
+
+    <div id="hesabuUnlocked" style="display:none;">
+      <div class="rx-head" style="margin-bottom:10px;">
+        <h2 class="section-title" style="margin:0;">Hesabu za Jumla — Mauzo Yote</h2>
+        <button type="button" class="secondary-btn" id="hesabuLogout" style="padding:6px 12px; font-size:0.75rem;">Toka</button>
+      </div>
+      <div id="hesabuTotal"></div>
+      <div id="hesabuTableWrap"></div>
+    </div>
+  </section>
+
+</main>
+
+<div id="toast"></div>
+
+<script>
+const DAWA_CATS = ["Antibiotiki","Maumivu","Homa/Malaria","Shinikizo la damu","Kisukari","Vitamini","Nyinginezo"];
+const VIFAA_CATS = ["Sindano (Syringe/Needle)","Bandeji na Plasta","Drips/IV Fluids","Glavu","Vifaa Vingine"];
+
+// ============================================================
+// DATA HAIHIFADHIWI HAPA TENA — INATOKA KWA SEVA (server.js)
+// Kompyuta hii ni "mteja" (client) tu; kila kitendo kinatumwa
+// kwa seva, na seva ndiyo inayohifadhi na kurudisha data mpya.
+// ============================================================
+let medicines = [];
+let nextId = 1;
+let ingizoLog = [];
+let manunuziLog = [];
+let salesLog = [];
+let maagizoLog = [];
+let rxItemSeq = 0;
+let rxIdSeq = 1;
+let editingRxIds = new Set();
+
+let labLog = [];
+let labItemSeq = 0;
+let labIdSeq = 1;
+let editingLabIds = new Set();
+
+let patientLog = [];
+let patientIdSeq = 1;
+let currentPatientId = null;
+
+let auditUnlocked = false;
+
+// -----------------------------------------------------------
+// MAWASILIANO NA SEVA
+// -----------------------------------------------------------
+function applyState(data){
+  medicines = data.medicines;
+  nextId = data.nextId;
+  ingizoLog = data.ingizoLog;
+  manunuziLog = data.manunuziLog;
+  salesLog = data.salesLog;
+  maagizoLog = data.maagizoLog;
+  rxIdSeq = data.rxIdSeq;
+  labLog = data.labLog;
+  labIdSeq = data.labIdSeq;
+  patientLog = data.patientLog;
+  patientIdSeq = data.patientIdSeq;
+  renderAll();
+}
+
+async function apiPost(url, body){
+  try{
+    const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body||{}) });
+    const data = await res.json();
+    if(!res.ok){ showToast(data.error || 'Hitilafu imetokea', 'error'); return null; }
+    applyState(data);
+    return data;
+  }catch(e){
+    showToast('Imeshindwa kuunganisha na seva — angalia mtandao wa WiFi', 'error');
+    return null;
+  }
+}
+
+async function apiDelete(url){
+  try{
+    const res = await fetch(url, { method:'DELETE' });
+    const data = await res.json();
+    if(!res.ok){ showToast(data.error || 'Hitilafu imetokea', 'error'); return null; }
+    applyState(data);
+    return data;
+  }catch(e){
+    showToast('Imeshindwa kuunganisha na seva — angalia mtandao wa WiFi', 'error');
+    return null;
+  }
+}
+
+async function syncState(){
+  try{
+    const res = await fetch('/api/state');
+    const data = await res.json();
+    applyState(data);
+  }catch(e){
+    // seva haipatikani kwa sasa — itajaribu tena baada ya sekunde chache
+  }
+}
+
+// Data ya wenzako (kompyuta nyingine) inaonekana ndani ya sekunde chache
+setInterval(syncState, 4000);
+
+
+function medOptionsHTML(selectedId){
+  return medicines.map(m=>`<option value="${m.id}" ${m.id===selectedId?'selected':''}>${m.name}</option>`).join('');
+}
+
+function addRxItemRow(){
+  rxItemSeq++;
+  const wrap = document.getElementById('rxItems');
+  const div = document.createElement('div');
+  div.className = 'rx-item';
+  div.dataset.rowId = rxItemSeq;
+  div.innerHTML = `
+    <div class="row">
+      <div>
+        <label>Dawa</label>
+        <select class="rx_med">${medOptionsHTML()}</select>
+      </div>
+      <div>
+        <label>Kipimo</label>
+        <select class="rx_unit"></select>
+      </div>
+    </div>
+    <label>Kiasi</label>
+    <input type="number" class="rx_qty" min="1">
+    <button type="button" class="rx-item-remove">Ondoa Dawa Hii</button>
+  `;
+  wrap.appendChild(div);
+  updateRxUnitOptions(div);
+  updateRxRemoveButtons();
+}
+
+function updateRxUnitOptions(row){
+  const medSel = row.querySelector('.rx_med');
+  const unitSel = row.querySelector('.rx_unit');
+  const m = medicines.find(x=>x.id===Number(medSel.value));
+  const opts = unitOptionsForMed(m);
+  const current = unitSel.value;
+  unitSel.innerHTML = opts.map(o=>`<option value="${o.value}">${o.label}</option>`).join('');
+  if(opts.some(o=>o.value===current)) unitSel.value = current;
+}
+
+function updateRxRemoveButtons(){
+  const rows = document.querySelectorAll('#rxItems .rx-item');
+  rows.forEach(row=>{
+    const btn = row.querySelector('.rx-item-remove');
+    btn.style.display = rows.length > 1 ? 'block' : 'none';
+  });
+}
+
+function resetRxItems(){
+  document.getElementById('rxItems').innerHTML = '';
+  addRxItemRow();
+}
+
+function addLabItemRow(){
+  labItemSeq++;
+  const wrap = document.getElementById('labItems');
+  const div = document.createElement('div');
+  div.className = 'rx-item';
+  div.dataset.rowId = labItemSeq;
+  div.innerHTML = `
+    <div class="row">
+      <div>
+        <label>Jina la Kipimo</label>
+        <input type="text" class="lab_test_name" placeholder="mfano: Malaria RDT">
+      </div>
+      <div>
+        <label>Gharama (TZS)</label>
+        <input type="number" class="lab_test_price" min="0" placeholder="mfano: 5000">
+      </div>
+    </div>
+    <button type="button" class="lab-item-remove rx-item-remove">Ondoa Kipimo Hiki</button>
+  `;
+  wrap.appendChild(div);
+  updateLabRemoveButtons();
+}
+
+function updateLabRemoveButtons(){
+  const rows = document.querySelectorAll('#labItems .rx-item');
+  rows.forEach(row=>{
+    const btn = row.querySelector('.lab-item-remove');
+    btn.style.display = rows.length > 1 ? 'block' : 'none';
+  });
+}
+
+function resetLabItems(){
+  document.getElementById('labItems').innerHTML = '';
+  addLabItemRow();
+}
+
+function refreshRxMedSelects(){
+  document.querySelectorAll('#rxItems .rx-item').forEach(row=>{
+    const sel = row.querySelector('.rx_med');
+    const current = Number(sel.value);
+    sel.innerHTML = medOptionsHTML(current);
+    if(medicines.some(m=>m.id===current)) sel.value = current;
+    updateRxUnitOptions(row);
+  });
+}
+
+function fmt(n){ return Number(n).toLocaleString('en-US'); }
+
+let stockFilter = 'zote';
+
+function populateStockCatSelect(){
+  const type = document.getElementById('s_type').value;
+  const catSel = document.getElementById('s_cat');
+  const cats = type === 'kifaa' ? VIFAA_CATS : DAWA_CATS;
+  catSel.innerHTML = cats.map(c=>`<option>${c}</option>`).join('');
+}
+
+function todayKey(){
+  const d = new Date();
+  return d.toISOString().slice(0,10);
+}
+
+function todayLabel(){
+  const d = new Date();
+  return d.toLocaleDateString('sw-TZ', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+}
+
+let toastTimer = null;
+function showToast(msg, type){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.toggle('error', type === 'error');
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> t.classList.remove('show'), type === 'error' ? 4000 : 2200);
+}
+
+function refreshMedSelects(){
+  const selects = ['i_med','m_med','sale_med'];
+  selects.forEach(id=>{
+    const el = document.getElementById(id);
+    const current = el.value;
+    el.innerHTML = medicines.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+    if(current) el.value = current;
+  });
+  updateSaleUnitOptions();
+  refreshRxMedSelects();
+}
+
+function unitOptionsForMed(m){
+  if(!m) return [];
+  const opts = [{ value:'unit', label:`${m.unitLabel} (kimoja)`, price:m.unitPrice||0, factor:1 }];
+  if(m.packSize>0) opts.push({ value:'pack', label:`Pakiti (${fmt(m.packSize)} ${m.unitLabel})`, price:m.packPrice||0, factor:m.packSize });
+  if(m.bottleSize>0) opts.push({ value:'bottle', label:`Chupa (${fmt(m.bottleSize)} ${m.unitLabel})`, price:m.bottlePrice||0, factor:m.bottleSize });
+  return opts;
+}
+
+function updateSaleUnitOptions(){
+  const medSel = document.getElementById('sale_med');
+  const unitSel = document.getElementById('sale_unit');
+  const priceInput = document.getElementById('sale_price');
+  if(!medSel || !unitSel) return;
+  const m = medicines.find(x=>x.id===Number(medSel.value));
+  const opts = unitOptionsForMed(m);
+  const currentUnit = unitSel.value;
+  unitSel.innerHTML = opts.map(o=>`<option value="${o.value}">${o.label}</option>`).join('');
+  if(opts.some(o=>o.value===currentUnit)) unitSel.value = currentUnit;
+  const chosen = opts.find(o=>o.value===unitSel.value) || opts[0];
+  if(chosen && priceInput && !priceInput.dataset.userEdited){
+    priceInput.value = chosen.price;
+  }
+}
+
+function statusOf(m){
+  if(m.qty <= 0) return {label:'Imeisha', cls:'out'};
+  if(m.qty < m.min) return {label:'Chini ya kiwango', cls:'low'};
+  return {label:'Salama', cls:'ok'};
+}
+
+function renderSummary(){
+  const total = medicines.length;
+  const dawaCount = medicines.filter(m=>m.type!=='kifaa').length;
+  const kifaaCount = medicines.filter(m=>m.type==='kifaa').length;
+  const low = medicines.filter(m=>m.qty < m.min && m.qty>0).length;
+  const out = medicines.filter(m=>m.qty<=0).length;
+  const totalUnits = medicines.reduce((a,m)=>a+m.qty,0);
+  document.getElementById('summaryCards').innerHTML = `
+    <div class="card">
+      <div class="num">${total}</div>
+      <div class="label">Aina za Bidhaa &middot; Dawa ${dawaCount} · Vifaa ${kifaaCount}</div>
+    </div>
+    <div class="card good">
+      <div class="num">${fmt(totalUnits)}</div>
+      <div class="label">Vipimo Stock-ni</div>
+    </div>
+    <div class="card warn">
+      <div class="num">${low}</div>
+      <div class="label">Chini ya Kiwango</div>
+    </div>
+    <div class="card danger">
+      <div class="num">${out}</div>
+      <div class="label">Zimeisha Kabisa</div>
+    </div>
+  `;
+}
+
+function priceLinesHTML(m){
+  const lines = [`${m.unitLabel || 'Kipimo'}: ${fmt(m.unitPrice||0)} TZS`];
+  if(m.packSize>0) lines.push(`Pakiti (${fmt(m.packSize)} ${m.unitLabel}): ${fmt(m.packPrice||0)} TZS`);
+  if(m.bottleSize>0) lines.push(`Chupa (${fmt(m.bottleSize)} ${m.unitLabel}): ${fmt(m.bottlePrice||0)} TZS`);
+  return lines.join(' &middot; ');
+}
+
+function expiryStatus(m){
+  if(!m.expireDate) return null;
+  const today = new Date();
+  const exp = new Date(m.expireDate + 'T00:00:00');
+  const daysLeft = Math.ceil((exp - today) / (1000*60*60*24));
+  if(daysLeft < 0) return { label: 'Imeisha Muda', cls: 'out' };
+  if(daysLeft <= 90) return { label: `Inakaribia Kuisha (siku ${daysLeft})`, cls: 'low' };
+  return { label: 'Salama', cls: 'ok' };
+}
+
+function fmtDate(d){
+  if(!d) return '—';
+  const dt = new Date(d + 'T00:00:00');
+  return dt.toLocaleDateString('sw-TZ', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+function renderStock(){
+  const list = document.getElementById('stockList');
+  const filtered = stockFilter === 'zote' ? medicines : medicines.filter(m=>m.type===stockFilter);
+  if(medicines.length===0){
+    list.innerHTML = '<p class="empty">Hakuna bidhaa zilizosajiliwa bado.</p>';
+    return;
+  }
+  if(filtered.length===0){
+    list.innerHTML = '<p class="empty">Hakuna bidhaa katika kundi hili.</p>';
+    return;
+  }
+  const rows = filtered.map(m=>{
+    const st = statusOf(m);
+    const expSt = expiryStatus(m);
+    const typeLabel = m.type === 'kifaa' ? 'Kifaa' : 'Dawa';
+    return `
+    <tr>
+      <td><b>${m.name}</b><div style="font-size:0.68rem; color:var(--text-muted);"><span class="type-tag ${m.type}">${typeLabel}</span> ${m.cat}</div></td>
+      <td>${fmtDate(m.manufactureDate)}</td>
+      <td>${fmtDate(m.expireDate)}${expSt ? `<div style="margin-top:3px;"><span class="badge ${expSt.cls}" style="font-size:0.62rem;">${expSt.label}</span></div>` : ''}</td>
+      <td>${fmt(m.qty)} ${m.unitLabel}</td>
+      <td>${fmt(m.min)}</td>
+      <td><span class="badge ${st.cls}">${st.label}</span></td>
+      <td>
+        <div style="display:flex; gap:4px; flex-wrap:nowrap;">
+          <button class="plus" type="button" data-action="plus" data-id="${m.id}" style="padding:5px 9px; font-size:0.72rem;">+10</button>
+          <button class="minus" type="button" data-action="minus" data-id="${m.id}" style="padding:5px 9px; font-size:0.72rem;">-10</button>
+          <button type="button" data-action="delete" data-id="${m.id}" style="padding:5px 9px; font-size:0.72rem;">Futa</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  list.innerHTML = `
+    <div class="hesabu-table-scroll">
+      <table class="hesabu-table">
+        <thead>
+          <tr>
+            <th>Jina la Bidhaa</th>
+            <th>Tarehe ya Utengenezaji</th>
+            <th>Tarehe ya Mwisho wa Matumizi</th>
+            <th>Stock</th>
+            <th>Kiwango cha Chini</th>
+            <th>Hali ya Stock</th>
+            <th>Vitendo</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+function adjustStock(id, delta){
+  apiPost(`/api/medicines/${id}/adjust`, { delta });
+}
+
+function removeMed(id){
+  apiDelete(`/api/medicines/${id}`);
+}
+
+function renderMahitaji(){
+  const needed = medicines.filter(m=>m.qty < m.min).sort((a,b)=> (a.qty/a.min) - (b.qty/b.min));
+  const list = document.getElementById('mahitajiList');
+  if(needed.length===0){
+    list.innerHTML = '<p class="empty">Dawa na vifaa vyote viko kwenye kiwango kinachotakiwa.</p>';
+    return;
+  }
+  list.innerHTML = needed.map(m=>{
+    const pungufu = m.min - m.qty;
+    const st = statusOf(m);
+    const typeLabel = m.type === 'kifaa' ? 'Kifaa' : 'Dawa';
+    return `
+    <div class="med-card">
+      <div class="top-row">
+        <div>
+          <div class="name">${m.name}</div>
+          <div class="cat"><span class="type-tag ${m.type}">${typeLabel}</span> &nbsp;${m.cat}</div>
+        </div>
+        <span class="badge ${st.cls}">${st.label}</span>
+      </div>
+      <div class="stat-row">
+        <div class="stat">Iliyopo<b>${fmt(m.qty)}</b></div>
+        <div class="stat">Inayotakiwa<b>${fmt(m.min)}</b></div>
+        <div class="stat">Pungufu<b style="color:var(--amber)">${fmt(pungufu)}</b></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderMatumizi(){
+  const totalUsed = medicines.reduce((a,m)=>a+m.used,0) || 1;
+  const sorted = [...medicines].sort((a,b)=>b.used-a.used);
+  const chart = document.getElementById('matumiziChart');
+  chart.innerHTML = sorted.map(m=>{
+    const pct = ((m.used/totalUsed)*100).toFixed(1);
+    return `
+    <div class="bar-item">
+      <div class="bar-label">
+        <span>${m.name}</span>
+        <span style="color:var(--accent); font-weight:700;">${pct}%</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${pct}%"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderRxQueue(){
+  const wrap = document.getElementById('rxQueueList');
+  if(!wrap) return;
+  const pending = maagizoLog.filter(r=>r.status==='pending');
+  if(pending.length===0){
+    wrap.innerHTML = '<p class="empty">Hakuna maagizo yanayosubiri idhini kwa sasa.</p>';
+    return;
+  }
+  wrap.innerHTML = pending.map(r=>{
+    const isEditing = editingRxIds.has(r.id);
+
+    if(isEditing){
+      const editRows = r.items.map(it=>`
+        <div class="rx-edit-row">
+          <span class="re-name">${it.name} <span style="color:var(--text-muted);">(${it.unitLabel})</span></span>
+          <input type="number" class="rx-edit-qty" data-med-id="${it.medId}" value="${it.qty}" min="1">
+        </div>`).join('');
+      return `
+      <div class="rx-queue-card" data-rx-id="${r.id}">
+        <div class="rx-head">
+          <div>
+            <div class="rx-patient">${r.patient}</div>
+            <div class="rx-meta">${[r.file, r.doctor].filter(Boolean).join(' &middot; ') || 'Taarifa hazijabainishwa'}</div>
+          </div>
+          <span class="badge low">Inahaririwa</span>
+        </div>
+        <div class="rx-drugs">${editRows}</div>
+        <div class="rx-approve-actions">
+          <button type="button" class="btn-approve" data-id="${r.id}">Hifadhi na Uza</button>
+          <button type="button" class="btn-cancel-edit" data-id="${r.id}">Ghairi</button>
+        </div>
+      </div>`;
+    }
+
+    const drugRows = r.items.map(it=>`
+      <div class="rx-drug-row">
+        <span class="d-name">${it.name} &times; ${fmt(it.qty)} ${it.unitLabel || ''}</span>
+        <span>${fmt(it.total)} TZS</span>
+      </div>`).join('');
+    return `
+    <div class="rx-queue-card" data-rx-id="${r.id}">
+      <div class="rx-head">
+        <div>
+          <div class="rx-patient">${r.patient}</div>
+          <div class="rx-meta">${[r.file, r.doctor].filter(Boolean).join(' &middot; ') || 'Taarifa hazijabainishwa'}</div>
+          <div class="rx-meta">Vipimo: ${r.diagnosis || 'Hazijabainishwa'} &middot; ${r.time}</div>
+        </div>
+        <span class="badge low">Inasubiri Idhini</span>
+      </div>
+      <div class="rx-drugs">${drugRows}</div>
+      <div class="rx-head" style="margin-top:8px;">
+        <span></span>
+        <div class="rx-total">${fmt(r.grandTotal)} TZS</div>
+      </div>
+      <div class="rx-approve-actions">
+        <button type="button" class="btn-approve" data-id="${r.id}">Idhinisha Mauzo</button>
+        <button type="button" class="btn-edit" data-id="${r.id}">Hariri Kiasi</button>
+      </div>
+      <div class="rx-approve-actions">
+        <button type="button" class="btn-postpone" data-id="${r.id}">Ameahirisha</button>
+        <button type="button" class="btn-reject" data-id="${r.id}">Kataa (Hazipo)</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderMauzo(){
+  const totalEl = document.getElementById('mauzoTotal');
+  const listEl = document.getElementById('mauzoList');
+  if(!totalEl || !listEl) return;
+
+  if(salesLog.length===0){
+    totalEl.innerHTML = '';
+    listEl.innerHTML = '<p class="empty">Hakuna mauzo yaliyosajiliwa bado.</p>';
+    return;
+  }
+
+  const grandTotal = salesLog.reduce((a,s)=>a+s.total,0);
+  totalEl.innerHTML = `
+    <div class="grand-total">
+      <span class="gt-label">Jumla ya Mauzo Yote</span>
+      <span class="gt-num">${fmt(grandTotal)} TZS</span>
+    </div>`;
+
+  // group by date, newest date first, newest sale first within a day
+  const groups = {};
+  salesLog.forEach(s=>{
+    if(!groups[s.dateKey]) groups[s.dateKey] = [];
+    groups[s.dateKey].push(s);
+  });
+  const dateKeys = Object.keys(groups).sort((a,b)=> b.localeCompare(a));
+
+  listEl.innerHTML = dateKeys.map(key=>{
+    const entries = groups[key];
+    const dayTotal = entries.reduce((a,s)=>a+s.total,0);
+    const rows = entries.map(s=>`
+      <div class="sale-row">
+        <div>
+          <div class="sr-name">${s.name}</div>
+          <div class="sr-meta">${fmt(s.qty)} ${s.unitLabel || 'vipimo'} &times; ${fmt(s.price)} TZS &middot; ${s.time}</div>
+        </div>
+        <div class="sr-cost">${fmt(s.total)} TZS</div>
+      </div>`).join('');
+    return `
+      <div class="day-group">
+        <div class="day-head">
+          <span class="day-date">${entries[0].dateLabel}</span>
+          <span class="day-total">${fmt(dayTotal)} TZS</span>
+        </div>
+        <div class="day-body">${rows}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderMaagizo(){
+  const totalEl = document.getElementById('maagizoTotal');
+  const listEl = document.getElementById('maagizoList');
+  if(!totalEl || !listEl) return;
+
+  if(maagizoLog.length===0){
+    totalEl.innerHTML = '';
+    listEl.innerHTML = '<p class="empty">Hakuna maagizo yaliyosajiliwa bado.</p>';
+    return;
+  }
+
+  const grandTotal = maagizoLog.filter(r=>r.status==='approved').reduce((a,r)=>a+r.grandTotal,0);
+  const pendingCount = maagizoLog.filter(r=>r.status==='pending').length;
+  totalEl.innerHTML = `
+    <div class="grand-total">
+      <span class="gt-label">Jumla ya Mauzo Yaliyoidhinishwa ${pendingCount>0 ? `&middot; ${pendingCount} yanasubiri idhini` : ''}</span>
+      <span class="gt-num">${fmt(grandTotal)} TZS</span>
+    </div>`;
+
+  const groups = {};
+  maagizoLog.forEach(r=>{
+    if(!groups[r.dateKey]) groups[r.dateKey] = [];
+    groups[r.dateKey].push(r);
+  });
+  const dateKeys = Object.keys(groups).sort((a,b)=> b.localeCompare(a));
+
+  listEl.innerHTML = dateKeys.map(key=>{
+    const entries = groups[key];
+    const dayTotal = entries.filter(r=>r.status==='approved').reduce((a,r)=>a+r.grandTotal,0);
+    const cards = entries.map(r=>{
+      const drugRows = r.items.map(it=>`
+        <div class="rx-drug-row">
+          <span class="d-name">${it.name} &times; ${fmt(it.qty)} ${it.unitLabel || ''}</span>
+          <span>${fmt(it.total)} TZS</span>
+        </div>`).join('');
+
+      let badgeCls = 'low', badgeLabel = 'Inasubiri Idhini', extraMeta = '';
+      if(r.status === 'approved'){
+        badgeCls = 'ok';
+        badgeLabel = r.edited ? 'Imehaririwa na Kuuzwa' : 'Imeuzwa';
+        if(r.approvedTime) extraMeta = ` &middot; Imekamilika saa ${r.approvedTime}`;
+      } else if(r.status === 'rejected'){
+        badgeCls = 'out';
+        badgeLabel = 'Mauzo Yamekataliwa';
+        if(r.rejectedTime) extraMeta = ` &middot; Imekataliwa saa ${r.rejectedTime}`;
+      }
+
+      return `
+      <div class="rx-card">
+        <div class="rx-head">
+          <div>
+            <div class="rx-patient">${r.patient}</div>
+            <div class="rx-meta">${[r.file, r.doctor].filter(Boolean).join(' &middot; ') || 'Taarifa hazijabainishwa'}</div>
+            <div class="rx-meta">Vipimo: ${r.diagnosis || 'Hazijabainishwa'} &middot; ${r.time}${extraMeta}</div>
+            ${r.status==='rejected' ? `<div class="rx-meta" style="color:var(--red);">Sababu: ${r.rejectReason || 'Havijabainishwa'}</div>` : ''}
+          </div>
+          <div style="text-align:right;">
+            <span class="badge ${badgeCls}">${badgeLabel}</span>
+            <div class="rx-total">${fmt(r.grandTotal)} TZS</div>
+          </div>
+        </div>
+        <div class="rx-drugs">${drugRows}</div>
+      </div>`;
+    }).join('');
+    return `
+      <div class="day-group">
+        <div class="day-head">
+          <span class="day-date">${entries[0].dateLabel}</span>
+          <span class="day-total">${fmt(dayTotal)} TZS</span>
+        </div>
+        <div class="day-body" style="padding:10px 0;">${cards}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderLogs(){
+  const iList = document.getElementById('ingizoList');
+  if(ingizoLog.length===0){
+    iList.innerHTML = '<p class="empty">Hakuna rekodi bado.</p>';
+  } else {
+    const rows = ingizoLog.map(l=>`
+      <tr>
+        <td><b>${l.name}</b></td>
+        <td>${fmtDate(l.manufactureDate)}</td>
+        <td>${fmtDate(l.expireDate)}</td>
+        <td>+${fmt(l.qty)}</td>
+        <td>${l.source || 'Haijabainishwa'}</td>
+        <td>${l.dateLabel ? l.dateLabel+' · ' : ''}${l.time || ''}</td>
+      </tr>`).join('');
+    iList.innerHTML = `
+      <div class="hesabu-table-scroll">
+        <table class="hesabu-table">
+          <thead>
+            <tr>
+              <th>Jina la Dawa</th>
+              <th>Tarehe ya Utengenezaji</th>
+              <th>Tarehe ya Mwisho wa Matumizi</th>
+              <th>Kiasi</th>
+              <th>Chanzo</th>
+              <th>Tarehe ya Kuingiza</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  }
+
+  const mList = document.getElementById('manunuziList');
+  mList.innerHTML = manunuziLog.length===0
+    ? '<p class="empty">Hakuna rekodi bado.</p>'
+    : manunuziLog.map(l=>`
+      <div class="log-entry">
+        <div>
+          <div class="l-name">${l.name}</div>
+          <div class="l-meta">${l.supplier || 'Muuzaji hajabainishwa'} · ${l.cost ? fmt(l.cost)+' TZS' : ''}</div>
+        </div>
+        <div class="l-qty">+${fmt(l.qty)}</div>
+      </div>`).join('');
+}
+
+function getCombinedSalesRows(){
+  const rows = [];
+
+  // Mauzo ya kawaida (walk-in) — Mhusika: Mteja wa Nje — daima yamehesabiwa
+  salesLog.forEach(s=>{
+    rows.push({
+      name: s.name,
+      qty: s.qty,
+      unitLabel: s.unitLabel || 'vipimo',
+      total: s.total,
+      mhusika: 'Mteja wa Nje',
+      mhusikaCls: 'nje',
+      dateLabel: s.dateLabel,
+      time: s.time,
+      statusLabel: 'Imeuzwa',
+      statusCls: 'ok',
+      counted: true,
+      reason: null
+    });
+  });
+
+  // Maagizo YOTE ya daktari — yanayosubiri, yaliyouzwa, na yaliyokataliwa — yote yaonekane hapa
+  maagizoLog.forEach(r=>{
+    const drLabel = 'Dr. ' + (r.doctor || 'Haijabainishwa') + ' — Mgonjwa: ' + r.patient;
+    let statusLabel, statusCls, counted, timeUsed;
+    if(r.status === 'pending'){
+      statusLabel = 'Inasubiri Idhini Dukani'; statusCls = 'low'; counted = false; timeUsed = r.time;
+    } else if(r.status === 'rejected'){
+      statusLabel = 'Imekataliwa Dukani'; statusCls = 'out'; counted = false; timeUsed = r.rejectedTime || r.time;
+    } else {
+      statusLabel = r.edited ? 'Imehaririwa na Kuuzwa' : 'Imeuzwa'; statusCls = 'ok'; counted = true; timeUsed = r.approvedTime || r.time;
+    }
+    r.items.forEach(it=>{
+      rows.push({
+        name: it.name,
+        qty: it.qty,
+        unitLabel: it.unitLabel || 'vipimo',
+        total: it.total,
+        mhusika: drLabel,
+        mhusikaCls: 'dr',
+        dateLabel: r.dateLabel,
+        time: timeUsed,
+        statusLabel,
+        statusCls,
+        counted,
+        reason: r.status === 'rejected' ? (r.rejectReason || 'Havijabainishwa') : null
+      });
+    });
+  });
+
+  // Ada za Reception (kumuona daktari) — zinahesabiwa mara mgonjwa anaposajiliwa
+  patientLog.forEach(p=>{
+    rows.push({
+      name: 'Ada ya Kuonana na Daktari',
+      qty: 1,
+      unitLabel: 'huduma',
+      total: p.fee,
+      mhusika: 'Reception — Mgonjwa: ' + p.name,
+      mhusikaCls: 'nje',
+      dateLabel: p.dateLabel,
+      time: p.time,
+      statusLabel: 'Ada Imelipwa',
+      statusCls: 'ok',
+      counted: true,
+      reason: null
+    });
+  });
+
+  // Vipimo vya Maabara — gharama inahesabiwa mara mgonjwa anapopimwa, bila kujali majibu
+  labLog.forEach(l=>{
+    const labLabel = 'Maabara — Mgonjwa: ' + l.patient + (l.doctor ? ' (Dr. '+l.doctor+')' : '');
+    l.items.forEach(it=>{
+      rows.push({
+        name: it.name,
+        qty: 1,
+        unitLabel: 'kipimo',
+        total: it.price,
+        mhusika: labLabel,
+        mhusikaCls: 'dr',
+        dateLabel: l.dateLabel,
+        time: l.time,
+        statusLabel: l.status === 'tayari' ? 'Kipimo Kimefanyika — Majibu Tayari' : 'Kipimo Kimefanyika — Yanasubiri Majibu',
+        statusCls: l.status === 'tayari' ? 'ok' : 'low',
+        counted: true,
+        reason: null
+      });
+    });
+  });
+
+  // panga kwa tarehe na muda, mpya kwanza
+  rows.sort((a,b)=> (b.dateLabel+b.time).localeCompare(a.dateLabel+a.time));
+  return rows;
+}
+
+function renderHesabu(){
+  const lockedEl = document.getElementById('hesabuLocked');
+  const unlockedEl = document.getElementById('hesabuUnlocked');
+  if(!lockedEl || !unlockedEl) return;
+
+  if(!auditUnlocked){
+    lockedEl.style.display = 'block';
+    unlockedEl.style.display = 'none';
+    return;
+  }
+  lockedEl.style.display = 'none';
+  unlockedEl.style.display = 'block';
+
+  const rows = getCombinedSalesRows();
+  const totalEl = document.getElementById('hesabuTotal');
+  const tableWrap = document.getElementById('hesabuTableWrap');
+
+  // Jumla inahesabu miamala iliyokamilika (kuuzwa) tu — yanayosubiri/yaliyokataliwa hayajumlishwi
+  const grandTotal = rows.filter(r=>r.counted).reduce((a,r)=>a+r.total,0);
+  const notCountedTotal = rows.filter(r=>!r.counted).reduce((a,r)=>a+r.total,0);
+  totalEl.innerHTML = `
+    <div class="grand-total">
+      <span class="gt-label">Jumla ya Mapato Yote (Reception + Wateja wa Nje + Maagizo ya Dr. + Vipimo vya Maabara)</span>
+      <span class="gt-num">${fmt(grandTotal)} TZS</span>
+    </div>
+    ${notCountedTotal>0 ? `<p style="color:var(--text-muted); font-size:0.78rem; margin:-8px 0 12px;">Thamani ya ${fmt(notCountedTotal)} TZS kwenye miamala inayosubiri idhini au iliyokataliwa dukani <b>haijajumlishwa</b> hapo juu.</p>` : ''}`;
+
+  if(rows.length===0){
+    tableWrap.innerHTML = '<p class="empty">Hakuna mauzo yaliyosajiliwa bado.</p>';
+    return;
+  }
+
+  const bodyRows = rows.map(r=>`
+    <tr>
+      <td>${r.name}</td>
+      <td>${fmt(r.qty)} ${r.unitLabel}</td>
+      <td>${fmt(r.total)} TZS${!r.counted ? ' <small style="color:var(--text-muted);">(hazijahesabiwa)</small>' : ''}</td>
+      <td><span class="hesabu-mhusika ${r.mhusikaCls}">${r.mhusika}</span></td>
+      <td><span class="badge ${r.statusCls}">${r.statusLabel}</span>${r.reason ? `<div style="color:var(--red); font-size:0.68rem; margin-top:3px; white-space:normal;">Sababu: ${r.reason}</div>` : ''}</td>
+      <td>${r.dateLabel} &middot; ${r.time}</td>
+    </tr>`).join('');
+
+  tableWrap.innerHTML = `
+    <div class="hesabu-table-scroll">
+      <table class="hesabu-table">
+        <thead>
+          <tr>
+            <th>Dawa / Kifaa</th>
+            <th>Idadi</th>
+            <th>Mauzo</th>
+            <th>Mhusika</th>
+            <th>Hali</th>
+            <th>Tarehe</th>
+          </tr>
+        </thead>
+        <tbody>${bodyRows}</tbody>
+      </table>
+    </div>`;
+}
+
+function renderAll(){
+  renderSummary();
+  renderStock();
+  renderMahitaji();
+  renderMatumizi();
+  renderLogs();
+  renderRxQueue();
+  renderMauzo();
+  renderMaagizo();
+  renderLabPending();
+  renderLabReady();
+  renderLabResultsForDoctor();
+  renderReceptionQueue();
+  renderReceptionHistory();
+  renderHesabu();
+  refreshMedSelects();
+}
+
+// Tabs
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+// Stock action buttons (+10 / -10 / Futa) — delegated so they keep working after re-render
+document.getElementById('stockList').addEventListener('click', e=>{
+  const btn = e.target.closest('button[data-action]');
+  if(!btn) return;
+  const id = Number(btn.dataset.id);
+  if(btn.dataset.action === 'plus') adjustStock(id, 10);
+  else if(btn.dataset.action === 'minus') adjustStock(id, -10);
+  else if(btn.dataset.action === 'delete') removeMed(id);
+});
+
+// Add new medicine (stock form)
+document.getElementById('formStock').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const name = document.getElementById('s_name').value.trim();
+  const type = document.getElementById('s_type').value;
+  const cat = document.getElementById('s_cat').value;
+  const min = Number(document.getElementById('s_min').value);
+  const qty = Number(document.getElementById('s_qty').value);
+  const unitLabel = document.getElementById('s_unit_label').value.trim() || 'Kidonge';
+  const unitPrice = Number(document.getElementById('s_price_unit').value) || 0;
+  const packSize = Number(document.getElementById('s_pack_size').value) || 0;
+  const bottleSize = Number(document.getElementById('s_bottle_size').value) || 0;
+  const packPrice = Number(document.getElementById('s_price_pack').value) || (packSize>0 ? packSize*unitPrice : 0);
+  const bottlePrice = Number(document.getElementById('s_price_bottle').value) || (bottleSize>0 ? bottleSize*unitPrice : 0);
+  const manufactureDate = document.getElementById('s_mfg_date').value || '';
+  const expireDate = document.getElementById('s_exp_date').value || '';
+
+  if(!name){ showToast('Andika jina la bidhaa kwanza', 'error'); return; }
+  if(!document.getElementById('s_min').value){ showToast('Weka kiwango cha chini kinachotakiwa', 'error'); return; }
+  if(!document.getElementById('s_qty').value){ showToast('Weka stock ya sasa', 'error'); return; }
+
+  const result = await apiPost('/api/medicines', { name, type, cat, qty, min, unitLabel, unitPrice, packSize, packPrice, bottleSize, bottlePrice, manufactureDate, expireDate });
+  if(!result) return;
+
+  e.target.reset();
+  document.getElementById('s_unit_label').value = 'Kidonge';
+  populateStockCatSelect();
+  showToast(`"${name}" imesajiliwa kwenye stock`);
+});
+
+// Auto-suggest pack/bottle prices from unit price × quantity, unless staff overrides them
+['s_price_unit','s_pack_size'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', ()=>{
+    const packField = document.getElementById('s_price_pack');
+    if(packField.dataset.userEdited) return;
+    const unitPrice = Number(document.getElementById('s_price_unit').value) || 0;
+    const packSize = Number(document.getElementById('s_pack_size').value) || 0;
+    packField.value = (unitPrice && packSize) ? unitPrice*packSize : '';
+  });
+});
+['s_price_unit','s_bottle_size'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', ()=>{
+    const bottleField = document.getElementById('s_price_bottle');
+    if(bottleField.dataset.userEdited) return;
+    const unitPrice = Number(document.getElementById('s_price_unit').value) || 0;
+    const bottleSize = Number(document.getElementById('s_bottle_size').value) || 0;
+    bottleField.value = (unitPrice && bottleSize) ? unitPrice*bottleSize : '';
+  });
+});
+document.getElementById('s_price_pack').addEventListener('input', e=> e.target.dataset.userEdited = '1');
+document.getElementById('s_price_bottle').addEventListener('input', e=> e.target.dataset.userEdited = '1');
+document.getElementById('formStock').addEventListener('reset', ()=>{
+  document.getElementById('s_price_pack').dataset.userEdited = '';
+  document.getElementById('s_price_bottle').dataset.userEdited = '';
+});
+
+// Category list changes depending on whether the product is Dawa or Kifaa
+document.getElementById('s_type').addEventListener('change', populateStockCatSelect);
+populateStockCatSelect();
+
+// Stock filter (Zote / Dawa / Vifaa)
+document.querySelectorAll('.filter-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    stockFilter = btn.dataset.filter;
+    renderStock();
+  });
+});
+
+// Ingizo form
+document.getElementById('formIngizo').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const medId = Number(document.getElementById('i_med').value);
+  const qty = Number(document.getElementById('i_qty').value);
+  const source = document.getElementById('i_source').value.trim();
+  const manufactureDate = document.getElementById('i_mfg_date').value || '';
+  const expireDate = document.getElementById('i_exp_date').value || '';
+  const m = medicines.find(x=>x.id===medId);
+  if(!m){ showToast('Chagua dawa kwanza', 'error'); return; }
+  if(!document.getElementById('i_qty').value || qty<=0){ showToast('Weka kiasi kilichoingizwa', 'error'); return; }
+
+  const result = await apiPost('/api/ingizo', { medId, qty, source, manufactureDate, expireDate });
+  if(!result) return;
+
+  e.target.reset();
+  showToast(`Uingizaji wa "${m.name}" umesajiliwa`);
+});
+
+// Manunuzi form
+document.getElementById('formManunuzi').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const medId = Number(document.getElementById('m_med').value);
+  const qty = Number(document.getElementById('m_qty').value);
+  const cost = Number(document.getElementById('m_cost').value) || 0;
+  const supplier = document.getElementById('m_supplier').value.trim();
+  const m = medicines.find(x=>x.id===medId);
+  if(!m){ showToast('Chagua dawa kwanza', 'error'); return; }
+  if(!document.getElementById('m_qty').value || qty<=0){ showToast('Weka kiasi kilichonunuliwa', 'error'); return; }
+
+  const result = await apiPost('/api/manunuzi', { medId, qty, cost, supplier });
+  if(!result) return;
+
+  e.target.reset();
+  showToast(`Ununuzi wa "${m.name}" umesajiliwa`);
+});
+
+// Auto-fill sale price when a medicine or unit is picked, unless the person edits it themselves
+document.getElementById('sale_med').addEventListener('change', ()=>{
+  document.getElementById('sale_price').dataset.userEdited = '';
+  updateSaleUnitOptions();
+});
+document.getElementById('sale_unit').addEventListener('change', ()=>{
+  document.getElementById('sale_price').dataset.userEdited = '';
+  updateSaleUnitOptions();
+});
+document.getElementById('sale_price').addEventListener('input', e=>{
+  e.target.dataset.userEdited = '1';
+});
+
+// Mauzo (sales) form — converts the chosen unit (kidonge/pakiti/chupa) into base stock units
+document.getElementById('formMauzo').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const medId = Number(document.getElementById('sale_med').value);
+  const unitVal = document.getElementById('sale_unit').value;
+  const qty = Number(document.getElementById('sale_qty').value);
+  const price = Number(document.getElementById('sale_price').value);
+  const m = medicines.find(x=>x.id===medId);
+
+  if(!m){ showToast('Chagua dawa kwanza', 'error'); return; }
+  if(!document.getElementById('sale_qty').value || qty<=0){ showToast('Weka kiasi kilichouzwa', 'error'); return; }
+  if(document.getElementById('sale_price').value === '' || isNaN(price) || price<0){ showToast('Weka bei sahihi', 'error'); return; }
+
+  const unitOpt = unitOptionsForMed(m).find(o=>o.value===unitVal) || unitOptionsForMed(m)[0];
+
+  const result = await apiPost('/api/sales', { medId, unitValue: unitVal, qty, price });
+  if(!result) return;
+
+  document.getElementById('sale_price').dataset.userEdited = '';
+  e.target.reset();
+  updateSaleUnitOptions();
+  showToast(`Mauzo ya "${m.name}" (${fmt(qty)} ${unitOpt.label}) yamesajiliwa — ${fmt(qty*price)} TZS`);
+});
+
+// Pakia data halisi kutoka kwa seva mara ukurasa unapofunguliwa
+syncState();
+
+// Prescription (Maagizo ya Daktari) item rows
+resetRxItems();
+
+document.getElementById('rxAddItem').addEventListener('click', ()=>{
+  addRxItemRow();
+});
+
+document.getElementById('rxItems').addEventListener('click', e=>{
+  const btn = e.target.closest('.rx-item-remove');
+  if(!btn) return;
+  btn.closest('.rx-item').remove();
+  updateRxRemoveButtons();
+});
+
+document.getElementById('rxItems').addEventListener('change', e=>{
+  if(!e.target.classList.contains('rx_med')) return;
+  updateRxUnitOptions(e.target.closest('.rx-item'));
+});
+
+document.getElementById('formMaagizo').addEventListener('submit', async e=>{
+  e.preventDefault();
+
+  const patient = document.getElementById('rx_patient').value.trim();
+  const file = document.getElementById('rx_file').value.trim();
+  const doctor = document.getElementById('rx_doctor').value.trim();
+  const diagnosis = document.getElementById('rx_diagnosis').value.trim();
+
+  if(!patient){ showToast('Andika jina la mgonjwa', 'error'); return; }
+  if(!diagnosis){ showToast('Andika vipimo au utambuzi wa mgonjwa', 'error'); return; }
+
+  const rows = document.querySelectorAll('#rxItems .rx-item');
+  const items = [];
+  for(const row of rows){
+    const medId = Number(row.querySelector('.rx_med').value);
+    const unitValue = row.querySelector('.rx_unit').value;
+    const qtyVal = row.querySelector('.rx_qty').value;
+    const qty = Number(qtyVal);
+    if(!qtyVal || qty<=0){ showToast('Weka kiasi sahihi kwa kila dawa', 'error'); return; }
+    items.push({ medId, qty, unitValue });
+  }
+  if(items.length===0){ showToast('Ongeza angalau dawa moja', 'error'); return; }
+
+  const result = await apiPost('/api/maagizo', { patient, file, doctor, diagnosis, items, patientId: currentPatientId });
+  if(!result) return;
+
+  e.target.reset();
+  resetRxItems();
+  currentPatientId = null;
+  showToast(`Maagizo ya "${patient}" yamesajiliwa — yanasubiri idhini ya muuzaji kwenye kichupo cha Mauzo`);
+});
+
+// Vipimo vya Maabara — item rows
+resetLabItems();
+
+document.getElementById('labAddItem').addEventListener('click', ()=>{
+  addLabItemRow();
+});
+
+document.getElementById('labItems').addEventListener('click', e=>{
+  const btn = e.target.closest('.lab-item-remove');
+  if(!btn) return;
+  btn.closest('.rx-item').remove();
+  updateLabRemoveButtons();
+});
+
+document.getElementById('formMaabara').addEventListener('submit', async e=>{
+  e.preventDefault();
+
+  const patient = document.getElementById('lab_patient').value.trim();
+  const file = document.getElementById('lab_file').value.trim();
+  const doctor = document.getElementById('lab_doctor').value.trim();
+
+  if(!patient){ showToast('Andika jina la mgonjwa', 'error'); return; }
+
+  const rows = document.querySelectorAll('#labItems .rx-item');
+  const items = [];
+  for(const row of rows){
+    const name = row.querySelector('.lab_test_name').value.trim();
+    const priceVal = row.querySelector('.lab_test_price').value;
+    const price = Number(priceVal);
+    if(!name){ showToast('Andika jina la kila kipimo', 'error'); return; }
+    if(!priceVal || price<0){ showToast('Weka gharama sahihi kwa kila kipimo', 'error'); return; }
+    items.push({ name, price });
+  }
+  if(items.length===0){ showToast('Ongeza angalau kipimo kimoja', 'error'); return; }
+
+  const totalCost = items.reduce((a,it)=>a+it.price,0);
+
+  const result = await apiPost('/api/lab', { patient, file, doctor, items });
+  if(!result) return;
+
+  e.target.reset();
+  resetLabItems();
+  showToast(`Kipimo cha "${patient}" kimesajiliwa — ${fmt(totalCost)} TZS imeongezwa kwenye Hesabu za Jumla`);
+});
+
+function renderLabPending(){
+  const wrap = document.getElementById('labPendingList');
+  if(!wrap) return;
+  const pending = labLog.filter(l=>l.status==='inasubiri');
+  if(pending.length===0){
+    wrap.innerHTML = '<p class="empty">Hakuna kipimo kinachosubiri majibu kwa sasa.</p>';
+    return;
+  }
+  wrap.innerHTML = pending.map(l=>{
+    const testRows = l.items.map(it=>`
+      <div class="rx-drug-row">
+        <span class="d-name">${it.name}</span>
+        <span>${fmt(it.price)} TZS</span>
+      </div>`).join('');
+
+    if(editingLabIds.has(l.id)){
+      return `
+      <div class="rx-queue-card" data-lab-id="${l.id}">
+        <div class="rx-head">
+          <div>
+            <div class="rx-patient">${l.patient}</div>
+            <div class="rx-meta">${[l.file, l.doctor].filter(Boolean).join(' &middot; ') || 'Taarifa hazijabainishwa'}</div>
+          </div>
+          <span class="badge low">Kuandika Majibu</span>
+        </div>
+        <div class="rx-drugs">${testRows}</div>
+        <textarea class="lab-results-box" id="labResultsInput_${l.id}" placeholder="Andika majibu ya vipimo hapa...">${l.results || ''}</textarea>
+        <div class="rx-approve-actions">
+          <button type="button" class="btn-approve btn-submit-results" data-id="${l.id}">Tuma Majibu kwa Daktari</button>
+          <button type="button" class="btn-cancel-edit btn-cancel-results" data-id="${l.id}">Ghairi</button>
+        </div>
+      </div>`;
+    }
+
+    return `
+    <div class="rx-queue-card" data-lab-id="${l.id}">
+      <div class="rx-head">
+        <div>
+          <div class="rx-patient">${l.patient}</div>
+          <div class="rx-meta">${[l.file, l.doctor].filter(Boolean).join(' &middot; ') || 'Taarifa hazijabainishwa'}</div>
+          <div class="rx-meta">${l.time}</div>
+        </div>
+        <span class="badge low">Inasubiri Majibu</span>
+      </div>
+      <div class="rx-drugs">${testRows}</div>
+      <div class="rx-head" style="margin-top:8px;">
+        <span></span>
+        <div class="rx-total">${fmt(l.totalCost)} TZS</div>
+      </div>
+      <div class="rx-approve-actions">
+        <button type="button" class="btn-edit btn-start-results" data-id="${l.id}">Weka Majibu</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderLabResultCard(l, showAction){
+  const testRows = l.items.map(it=>`
+    <div class="rx-drug-row">
+      <span class="d-name">${it.name}</span>
+      <span>${fmt(it.price)} TZS</span>
+    </div>`).join('');
+  return `
+    <div class="rx-card" data-lab-id="${l.id}">
+      <div class="rx-head">
+        <div>
+          <div class="rx-patient">${l.patient}</div>
+          <div class="rx-meta">${[l.file, l.doctor].filter(Boolean).join(' &middot; ') || 'Taarifa hazijabainishwa'}</div>
+          <div class="rx-meta">Majibu yametumwa saa ${l.resultsTime || ''}</div>
+        </div>
+        <div style="text-align:right;">
+          <span class="badge ok">Majibu Tayari</span>
+          <div class="rx-total">${fmt(l.totalCost)} TZS</div>
+        </div>
+      </div>
+      <div class="rx-drugs">${testRows}</div>
+      <div class="lab-results-text"><span class="lr-label">Majibu ya Kipimo</span>${l.results}</div>
+      ${showAction ? `
+        <div class="rx-approve-actions">
+          <button type="button" class="btn-approve btn-use-lab" data-id="${l.id}">Tumia Majibu Haya Kuandika Maagizo</button>
+        </div>
+        ${l.usedForRx ? '<span class="lab-used-badge">&#10003; Tayari yametumika kuandikia maagizo</span>' : ''}
+      ` : ''}
+    </div>`;
+}
+
+function renderLabReady(){
+  const wrap = document.getElementById('labReadyList');
+  if(!wrap) return;
+  const ready = labLog.filter(l=>l.status==='tayari');
+  if(ready.length===0){
+    wrap.innerHTML = '<p class="empty">Hakuna majibu yaliyotumwa bado.</p>';
+    return;
+  }
+  wrap.innerHTML = ready.map(l=>renderLabResultCard(l, false)).join('');
+}
+
+function renderLabResultsForDoctor(){
+  const wrap = document.getElementById('labResultsForDoctor');
+  if(!wrap) return;
+  const ready = labLog.filter(l=>l.status==='tayari');
+  if(ready.length===0){
+    wrap.innerHTML = '<p class="empty">Hakuna majibu ya vipimo yaliyopokelewa bado.</p>';
+    return;
+  }
+  wrap.innerHTML = ready.map(l=>renderLabResultCard(l, true)).join('');
+}
+
+function startLabResults(id){
+  editingLabIds.add(id);
+  renderLabPending();
+}
+function cancelLabResults(id){
+  editingLabIds.delete(id);
+  renderLabPending();
+}
+async function submitLabResults(id){
+  const l = labLog.find(x=>x.id===id && x.status==='inasubiri');
+  if(!l) return;
+  const input = document.getElementById('labResultsInput_'+id);
+  const text = input.value.trim();
+  if(!text){ showToast('Andika majibu ya kipimo kabla ya kutuma', 'error'); return; }
+
+  const result = await apiPost(`/api/lab/${id}/results`, { results: text });
+  if(!result) return;
+
+  editingLabIds.delete(id);
+  showToast(`Majibu ya "${l.patient}" yametumwa kwa daktari`);
+}
+
+function switchToTab(tabName){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tabName));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', p.id === 'panel-'+tabName));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function useLabForRx(id){
+  const l = labLog.find(x=>x.id===id);
+  if(!l) return;
+
+  const result = await apiPost(`/api/lab/${id}/mark-used`, {});
+  if(!result) return;
+
+  switchToTab('maagizo');
+  document.getElementById('rx_patient').value = l.patient;
+  document.getElementById('rx_file').value = l.file;
+  document.getElementById('rx_doctor').value = l.doctor;
+  showToast(`Taarifa za "${l.patient}" zimewekwa kwenye fomu ya Maagizo — soma majibu ya kipimo kabla ya kuandika dawa`);
+}
+
+document.getElementById('labPendingList').addEventListener('click', e=>{
+  const startBtn = e.target.closest('.btn-start-results');
+  const submitBtn = e.target.closest('.btn-submit-results');
+  const cancelBtn = e.target.closest('.btn-cancel-results');
+  if(startBtn) startLabResults(Number(startBtn.dataset.id));
+  else if(submitBtn) submitLabResults(Number(submitBtn.dataset.id));
+  else if(cancelBtn) cancelLabResults(Number(cancelBtn.dataset.id));
+});
+
+document.getElementById('labReadyList').addEventListener('click', e=>{
+  const useBtn = e.target.closest('.btn-use-lab');
+  if(useBtn) useLabForRx(Number(useBtn.dataset.id));
+});
+
+document.getElementById('labResultsForDoctor').addEventListener('click', e=>{
+  const useBtn = e.target.closest('.btn-use-lab');
+  if(useBtn) useLabForRx(Number(useBtn.dataset.id));
+});
+
+// ================= RECEPTION =================
+
+document.getElementById('formReception').addEventListener('submit', async e=>{
+  e.preventDefault();
+
+  const name = document.getElementById('rec_name').value.trim();
+  const phone = document.getElementById('rec_phone').value.trim();
+  const age = document.getElementById('rec_age').value.trim();
+  const gender = document.getElementById('rec_gender').value;
+  const citizenship = document.getElementById('rec_citizenship').value.trim();
+  const region = document.getElementById('rec_region').value;
+  const district = document.getElementById('rec_district').value.trim();
+  const tribe = document.getElementById('rec_tribe').value.trim();
+  const hasNhif = document.getElementById('rec_nhif').value === 'ndiyo';
+  const nhifNumber = hasNhif ? document.getElementById('rec_nhif_number').value.trim() : '';
+  const feeVal = document.getElementById('rec_fee').value;
+  const fee = Number(feeVal);
+
+  if(!name){ showToast('Andika jina la mgonjwa', 'error'); return; }
+  if(!feeVal || fee<0){ showToast('Weka ada sahihi ya kumuona daktari', 'error'); return; }
+
+  const result = await apiPost('/api/patients', {
+    name, phone, age, gender, citizenship, region, district, tribe, hasNhif, nhifNumber, fee
+  });
+  if(!result) return;
+
+  const newPatient = result.patientLog.find(p=>p.name===name && p.status==='anasubiri_daktari');
+  e.target.reset();
+  document.getElementById('rec_citizenship').value = 'Mtanzania';
+  document.getElementById('rec_fee').value = 5000;
+  document.getElementById('rec_nhif_number_wrap').style.display = 'none';
+  showToast(`"${name}" amesajiliwa (Faili: ${newPatient ? newPatient.file : ''}) — ameongezwa kwenye Hesabu za Jumla na anasubiri daktari`);
+});
+
+document.getElementById('rec_nhif').addEventListener('change', e=>{
+  document.getElementById('rec_nhif_number_wrap').style.display = e.target.value === 'ndiyo' ? 'block' : 'none';
+});
+
+function renderPatientQueueCard(p, withActions){
+  const bio = [p.gender, p.age ? 'Umri: '+p.age : '', p.citizenship].filter(Boolean).join(' &middot; ');
+  const location = [p.region, p.district].filter(Boolean).join(' / ');
+  const nhifLabel = p.hasNhif ? ('NHIF: ' + (p.nhifNumber || 'Ndiyo')) : 'Bila NHIF (Analipa Mwenyewe)';
+  return `
+    <div class="rx-queue-card" data-patient-id="${p.id}">
+      <div class="rx-head">
+        <div>
+          <div class="rx-patient">${p.name}</div>
+          <div class="rx-meta">Faili: ${p.file}${p.phone ? ' &middot; '+p.phone : ''}</div>
+          ${bio ? `<div class="rx-meta">${bio}${p.tribe ? ' &middot; Kabila: '+p.tribe : ''}</div>` : ''}
+          ${location ? `<div class="rx-meta">${location}</div>` : ''}
+          <div class="rx-meta">${nhifLabel}</div>
+          <div class="rx-meta">Amelipa Ada: ${fmt(p.fee)} TZS &middot; ${p.time}</div>
+        </div>
+        <span class="badge low">Anasubiri Daktari</span>
+      </div>
+      ${withActions ? `
+      <div class="rx-approve-actions">
+        <button type="button" class="btn-approve btn-see-direct" data-id="${p.id}">Andika Dawa Moja kwa Moja</button>
+        <button type="button" class="btn-edit btn-send-lab" data-id="${p.id}">Tuma Maabara</button>
+      </div>` : ''}
+    </div>`;
+}
+
+function renderReceptionQueue(){
+  const waiting = patientLog.filter(p=>p.status==='anasubiri_daktari');
+
+  const recWrap = document.getElementById('receptionQueueList');
+  if(recWrap){
+    recWrap.innerHTML = waiting.length===0
+      ? '<p class="empty">Hakuna mgonjwa anayesubiri daktari kwa sasa.</p>'
+      : waiting.map(p=>renderPatientQueueCard(p,false)).join('');
+  }
+
+  const docWrap = document.getElementById('doctorPatientQueueList');
+  if(docWrap){
+    docWrap.innerHTML = waiting.length===0
+      ? '<p class="empty">Hakuna mgonjwa mpya kutoka Reception kwa sasa.</p>'
+      : waiting.map(p=>renderPatientQueueCard(p,true)).join('');
+  }
+}
+
+function renderReceptionHistory(){
+  const wrap = document.getElementById('receptionHistoryList');
+  if(!wrap) return;
+  if(patientLog.length===0){
+    wrap.innerHTML = '<p class="empty">Hakuna wagonjwa waliosajiliwa bado.</p>';
+    return;
+  }
+  const STATUS_MAP = {
+    anasubiri_daktari: { label:'Anasubiri Daktari', cls:'low' },
+    kwa_daktari: { label:'Anaonwa na Daktari', cls:'low' },
+    ametumwa_maabara: { label:'Ametumwa Maabara', cls:'low' },
+    imekamilika: { label:'Amemaliza — Ameandikiwa Dawa', cls:'ok' }
+  };
+  wrap.innerHTML = patientLog.map(p=>{
+    const st = STATUS_MAP[p.status] || { label:p.status, cls:'low' };
+    const bio = [p.gender, p.age ? 'Umri: '+p.age : '', p.citizenship].filter(Boolean).join(' &middot; ');
+    const location = [p.region, p.district].filter(Boolean).join(' / ');
+    const nhifLabel = p.hasNhif ? ('NHIF: ' + (p.nhifNumber || 'Ndiyo')) : 'Bila NHIF';
+    return `
+    <div class="rx-card">
+      <div class="rx-head">
+        <div>
+          <div class="rx-patient">${p.name}</div>
+          <div class="rx-meta">Faili: ${p.file}${p.phone ? ' &middot; '+p.phone : ''}</div>
+          ${bio ? `<div class="rx-meta">${bio}${p.tribe ? ' &middot; Kabila: '+p.tribe : ''}</div>` : ''}
+          ${location ? `<div class="rx-meta">${location} &middot; ${nhifLabel}</div>` : `<div class="rx-meta">${nhifLabel}</div>`}
+          <div class="rx-meta">${p.dateLabel} &middot; ${p.time}</div>
+        </div>
+        <div style="text-align:right;">
+          <span class="badge ${st.cls}">${st.label}</span>
+          <div class="rx-total">${fmt(p.fee)} TZS</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Daktari anamchukua mgonjwa moja kwa moja na kumwandikia dawa
+async function seeDoctorDirect(id){
+  const p = patientLog.find(x=>x.id===id && x.status==='anasubiri_daktari');
+  if(!p) return;
+
+  const result = await apiPost(`/api/patients/${id}/see-direct`, {});
+  if(!result) return;
+
+  currentPatientId = id;
+  switchToTab('maagizo');
+  document.getElementById('rx_patient').value = p.name;
+  document.getElementById('rx_file').value = p.file;
+  showToast(`Umemchukua "${p.name}" — jaza vipimo/utambuzi na dawa kisha bonyeza "Sajili Maagizo"`);
+}
+
+// Daktari anamtuma mgonjwa maabara kabla ya kuandika dawa
+async function sendToLabFromQueue(id){
+  const p = patientLog.find(x=>x.id===id && x.status==='anasubiri_daktari');
+  if(!p) return;
+
+  const result = await apiPost(`/api/patients/${id}/send-lab`, {});
+  if(!result) return;
+
+  switchToTab('maabara');
+  document.getElementById('lab_patient').value = p.name;
+  document.getElementById('lab_file').value = p.file;
+  showToast(`"${p.name}" ametumwa maabara — sajili vipimo vyake na gharama huko`);
+}
+
+document.getElementById('doctorPatientQueueList').addEventListener('click', e=>{
+  const directBtn = e.target.closest('.btn-see-direct');
+  const labBtn = e.target.closest('.btn-send-lab');
+  if(directBtn) seeDoctorDirect(Number(directBtn.dataset.id));
+  else if(labBtn) sendToLabFromQueue(Number(labBtn.dataset.id));
+});
+
+// Idhinisha mauzo ya agizo la daktari — hapa ndipo stock inapopungua
+// Kama agizo lipo kwenye modi ya kuhariri, kwanza soma kiasi kipya kutoka kwenye fomu
+async function approveRx(id){
+  const rx = maagizoLog.find(r=>r.id===id && r.status==='pending');
+  if(!rx) return;
+
+  const wasEditing = editingRxIds.has(id);
+  let edits = [];
+  if(wasEditing){
+    const card = document.querySelector(`.rx-queue-card[data-rx-id="${id}"]`);
+    const inputs = card.querySelectorAll('.rx-edit-qty');
+    for(const input of inputs){
+      const medId = Number(input.dataset.medId);
+      const qty = Number(input.value);
+      if(!input.value || qty<=0){ showToast('Weka kiasi sahihi kwa kila dawa', 'error'); return; }
+      edits.push({ medId, qty });
+    }
+  }
+
+  const result = await apiPost(`/api/maagizo/${id}/approve`, { edits });
+  if(!result) return;
+
+  editingRxIds.delete(id);
+  const updatedRx = result.maagizoLog.find(r=>r.id===id);
+  showToast(wasEditing
+    ? `Kiasi kimehaririwa na mauzo kwa "${updatedRx.patient}" yamekamilika — ${fmt(updatedRx.grandTotal)} TZS`
+    : `Mauzo kwa "${updatedRx.patient}" yameidhinishwa — ${fmt(updatedRx.grandTotal)} TZS`);
+}
+
+// Ahirisha kwa sasa — hatubadilishi chochote, taarifa inabaki "inasubiri idhini" kama ilivyo
+function postponeRx(id){
+  const rx = maagizoLog.find(r=>r.id===id && r.status==='pending');
+  if(!rx) return;
+  showToast(`Sawa — maagizo ya "${rx.patient}" yamebaki yakisubiri idhini, hayajaguswa`);
+}
+
+// Kataa mauzo — dawa/kifaa hakipo; agizo linarudi kwa daktari likiwa "Limekataliwa" na sababu
+async function rejectRx(id){
+  const rx = maagizoLog.find(r=>r.id===id && r.status==='pending');
+  if(!rx) return;
+  const reason = prompt('Andika sababu ya kukataa mauzo haya (mfano: Dawa/Kifaa havipo stock):', 'Dawa/Kifaa vilivyoagizwa havipo stock');
+  if(reason === null) return; // muuzaji ameghairi — taarifa inabaki kama ilivyo
+
+  const result = await apiPost(`/api/maagizo/${id}/reject`, { reason: reason.trim() });
+  if(!result) return;
+
+  editingRxIds.delete(id);
+  showToast(`Mauzo kwa "${rx.patient}" yamekataliwa — yamerudishwa kwa daktari`, 'error');
+}
+
+// Fungua modi ya kuhariri kiasi cha dawa kabla ya kuuza
+function startEditRx(id){
+  editingRxIds.add(id);
+  renderRxQueue();
+}
+function cancelEditRx(id){
+  editingRxIds.delete(id);
+  renderRxQueue();
+}
+
+document.getElementById('rxQueueList').addEventListener('click', e=>{
+  const approveBtn = e.target.closest('.btn-approve');
+  const postponeBtn = e.target.closest('.btn-postpone');
+  const rejectBtn = e.target.closest('.btn-reject');
+  const editBtn = e.target.closest('.btn-edit');
+  const cancelEditBtn = e.target.closest('.btn-cancel-edit');
+  if(approveBtn) approveRx(Number(approveBtn.dataset.id));
+  else if(postponeBtn) postponeRx(Number(postponeBtn.dataset.id));
+  else if(rejectBtn) rejectRx(Number(rejectBtn.dataset.id));
+  else if(editBtn) startEditRx(Number(editBtn.dataset.id));
+  else if(cancelEditBtn) cancelEditRx(Number(cancelEditBtn.dataset.id));
+});
+
+// Hesabu za Jumla — kuingia kwa password (inathibitishwa na seva, si kwenye kivinjari)
+document.getElementById('formHesabuLogin').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const input = document.getElementById('hesabu_password');
+  try{
+    const res = await fetch('/api/hesabu/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ password: input.value })
+    });
+    const data = await res.json();
+    if(data.ok){
+      auditUnlocked = true;
+      input.value = '';
+      renderHesabu();
+      showToast('Umeingia kwenye Hesabu za Jumla');
+    } else {
+      showToast('Password si sahihi', 'error');
+    }
+  }catch(e){
+    showToast('Imeshindwa kuunganisha na seva', 'error');
+  }
+});
+
+// Hesabu za Jumla — kutoka (kufunga tena ukurasa)
+document.getElementById('hesabuLogout').addEventListener('click', ()=>{
+  auditUnlocked = false;
+  renderHesabu();
+  showToast('Umetoka kwenye Hesabu za Jumla');
+});
+</script>
+</body>
+</html>
